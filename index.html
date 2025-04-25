@@ -3,138 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text to Image Generator</title>
+    <title>SeaArt AI - Epic Generator</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        :root {
+            --bg-dark: #1a1a1a;
+            --text-dark: #f0f0f0;
+            --accent-dark: #ff6b00;
+            --input-bg-dark: #2d2d2d;
         }
-
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #111;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
-            flex-direction: column;
-            text-align: center;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+            transition: all 0.3s;
         }
-
-        h1 {
-            font-size: 2rem;
-            color: #50fa7b;
-            margin-bottom: 20px;
-        }
-
         .container {
-            width: 80%;
-            max-width: 500px;
+            max-width: 600px;
+            margin: 20px auto;
             padding: 20px;
-            background: linear-gradient(135deg, #1f1f1f, #292929);
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            color: var(--accent-dark);
             text-align: center;
-        }
-
-        input[type="text"] {
-            padding: 10px;
-            font-size: 18px;
-            width: 80%;
-            max-width: 400px;
+            font-size: 2.2em;
             margin-bottom: 20px;
-            border: none;
+            text-shadow: 0 0 10px rgba(255, 107, 0, 0.3);
+        }
+        select, input, button {
+            padding: 12px;
+            margin: 10px 0;
+            width: 100%;
             border-radius: 5px;
-            background-color: #444;
-            color: #fff;
-            outline: none;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
-
-        input[type="text"]:focus {
-            border: 2px solid #50fa7b;
-        }
-
-        button {
-            padding: 12px 20px;
-            font-size: 18px;
-            background-color: #50fa7b;
-            color: #111;
             border: none;
+            font-size: 16px;
+        }
+        select, input {
+            background-color: var(--input-bg-dark);
+            color: var(--text-dark);
+            border: 1px solid #444;
+        }
+        button {
+            background: linear-gradient(135deg, #ff6b00, #ff3e00);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 0, 0.4);
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            border-left: 4px solid var(--accent-dark);
+        }
+        .theme-selector {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .theme-btn {
+            padding: 8px 12px;
             border-radius: 5px;
             cursor: pointer;
-            transition: background 0.3s ease;
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
         }
-
-        button:hover {
-            background-color: #45d66c;
+        #darkTheme {
+            background: #333;
+            color: white;
         }
-
-        .image-container {
-            margin-top: 30px;
+        #epicTheme {
+            background: linear-gradient(135deg, #222, #000);
+            color: var(--accent-dark);
+            border: 1px solid #ff6b00;
         }
-
-        img {
-            max-width: 100%;
-            max-height: 400px;
-            border-radius: 10px;
-            border: 2px solid #333;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-        }
-
-        .footer {
-            position: absolute;
-            bottom: 10px;
-            color: #bbb;
-            font-size: 14px;
-        }
-
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>⚔️ SeaArt AI - Epic Generator</h1>
+        
+        <!-- Theme Selector -->
+        <div class="theme-selector">
+            <div class="theme-btn" id="darkTheme" onclick="setTheme('dark')">Dark Theme</div>
+            <div class="theme-btn" id="epicTheme" onclick="setTheme('epic')">EPIC DARK</div>
+        </div>
+        
+        <!-- Aspect Ratio Selection -->
+        <label for="ratio">📐 Select Aspect Ratio:</label>
+        <select id="ratio">
+            <option value="1024,1024">Square (1:1)</option>
+            <option value="1080,1920">TikTok (9:16)</option>
+            <option value="1920,1080">YouTube (16:9)</option>
+            <option value="1024,768">Landscape (4:3)</option>
+        </select>
+        
+        <!-- Prompt Input -->
+        <label for="prompt">✍️ Enter Prompt:</label>
+        <input type="text" id="prompt" placeholder="e.g., A powerful warrior with glowing sword...">
+        
+        <!-- Generate Button -->
+        <button onclick="generateImage()">🔥 GENERATE IMAGE</button>
+        
+        <!-- Result (API Link) -->
+        <div id="result"></div>
+    </div>
 
-<div class="container">
-    <h1>Text to Image Generator</h1>
-    <input type="text" id="prompt" placeholder="Enter text to generate image">
-    <button onclick="generateImage()">Generate Image</button>
-    <div id="imageContainer" class="image-container"></div>
-</div>
-
-<div class="footer">
-    <p>&copy; 2025 Huzii Baloch | All Rights Reserved</p>
-</div>
-
-<script>
-    function generateImage() {
-        const prompt = document.getElementById("prompt").value;
-        if (prompt.trim() === "") {
-            alert("Please enter some text.");
-            return;
+    <script>
+        // Set theme
+        function setTheme(theme) {
+            document.body.className = theme;
+            if (theme === 'epic') {
+                document.body.style.backgroundImage = "radial-gradient(circle, #1a1a1a 0%, #000000 100%)";
+            } else {
+                document.body.style.backgroundImage = "none";
+            }
         }
 
-        const url = `https://eternal-ai-image-gen-api.tiiny.io/?prompt=${encodeURIComponent(prompt)}`;
-
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                if (data.image_url) {
-                    const imgElement = document.createElement("img");
-                    imgElement.src = data.image_url;
-                    const imageContainer = document.getElementById("imageContainer");
-                    imageContainer.innerHTML = "";  // Clear previous images
-                    imageContainer.appendChild(imgElement);
-                } else {
-                    alert("Error generating image.");
-                }
-            })
-            .catch(error => {
-                alert("Error: " + error.message);
-            });
-    }
-</script>
-
+        // Generate Image
+        function generateImage() {
+            const ratio = document.getElementById("ratio").value;
+            const prompt = document.getElementById("prompt").value;
+            
+            // Add ratio and theme to prompt
+            const fullPrompt = `${prompt} --ar ${ratio.split(",")[0]}:${ratio.split(",")[1]} --theme epic-dark`;
+            
+            // Generate API Link (replace with actual API endpoint)
+            const apiUrl = `https://seaart-ai.apis-bj-devs.workers.dev/?Prompt=${encodeURIComponent(fullPrompt)}`;
+            
+            // Display result with cool styling
+            document.getElementById("result").innerHTML = `
+                <h3>⚡ Generated API Link:</h3>
+                <p><a href="${apiUrl}" target="_blank" style="color: #ff6b00; word-break: break-all;">${apiUrl}</a></p>
+                <p>↑ Click to generate your EPIC image!</p>
+            `;
+        }
+    </script>
 </body>
 </html>
