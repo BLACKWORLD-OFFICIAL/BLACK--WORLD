@@ -3,100 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SeaArt AI - Epic Generator</title>
+    <title>SeaArt AI - Direct Image Generator</title>
     <style>
-        :root {
-            --bg-dark: #1a1a1a;
-            --text-dark: #f0f0f0;
-            --accent-dark: #ff6b00;
-            --input-bg-dark: #2d2d2d;
-        }
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #f0f0f0;
             margin: 0;
-            padding: 0;
-            background-color: var(--bg-dark);
-            color: var(--text-dark);
-            transition: all 0.3s;
+            padding: 20px;
         }
         .container {
             max-width: 600px;
-            margin: 20px auto;
+            margin: auto;
+            background-color: #2d2d2d;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
         }
         h1 {
-            color: var(--accent-dark);
+            color: #ff6b00;
             text-align: center;
-            font-size: 2.2em;
-            margin-bottom: 20px;
-            text-shadow: 0 0 10px rgba(255, 107, 0, 0.3);
         }
         select, input, button {
+            width: 100%;
             padding: 12px;
             margin: 10px 0;
-            width: 100%;
             border-radius: 5px;
             border: none;
             font-size: 16px;
         }
         select, input {
-            background-color: var(--input-bg-dark);
-            color: var(--text-dark);
-            border: 1px solid #444;
+            background-color: #3d3d3d;
+            color: white;
         }
         button {
             background: linear-gradient(135deg, #ff6b00, #ff3e00);
             color: white;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
         }
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 0, 0.4);
+            opacity: 0.9;
         }
         #result {
             margin-top: 20px;
-            padding: 15px;
-            background-color: rgba(0, 0, 0, 0.3);
-            border-radius: 5px;
-            border-left: 4px solid var(--accent-dark);
-        }
-        .theme-selector {
-            display: flex;
-            gap: 10px;
-            margin: 15px 0;
-        }
-        .theme-btn {
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            flex: 1;
             text-align: center;
-            font-weight: bold;
         }
-        #darkTheme {
-            background: #333;
-            color: white;
+        #generatedImage {
+            max-width: 100%;
+            border-radius: 5px;
+            border: 2px solid #ff6b00;
+            margin-top: 15px;
         }
-        #epicTheme {
-            background: linear-gradient(135deg, #222, #000);
-            color: var(--accent-dark);
-            border: 1px solid #ff6b00;
+        .loading {
+            display: none;
+            color: #ff6b00;
+            text-align: center;
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>⚔️ SeaArt AI - Epic Generator</h1>
-        
-        <!-- Theme Selector -->
-        <div class="theme-selector">
-            <div class="theme-btn" id="darkTheme" onclick="setTheme('dark')">Dark Theme</div>
-            <div class="theme-btn" id="epicTheme" onclick="setTheme('epic')">EPIC DARK</div>
-        </div>
+        <h1>🎨 SeaArt AI Image Generator</h1>
         
         <!-- Aspect Ratio Selection -->
         <label for="ratio">📐 Select Aspect Ratio:</label>
@@ -104,48 +73,58 @@
             <option value="1024,1024">Square (1:1)</option>
             <option value="1080,1920">TikTok (9:16)</option>
             <option value="1920,1080">YouTube (16:9)</option>
-            <option value="1024,768">Landscape (4:3)</option>
         </select>
         
         <!-- Prompt Input -->
         <label for="prompt">✍️ Enter Prompt:</label>
-        <input type="text" id="prompt" placeholder="e.g., A powerful warrior with glowing sword...">
+        <input type="text" id="prompt" placeholder="e.g., A mystical forest with glowing lights...">
         
         <!-- Generate Button -->
-        <button onclick="generateImage()">🔥 GENERATE IMAGE</button>
+        <button onclick="generateImage()">✨ GENERATE IMAGE</button>
         
-        <!-- Result (API Link) -->
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading">⏳ Generating your image... (10-20 seconds)</div>
+        
+        <!-- Result (Image Display) -->
         <div id="result"></div>
     </div>
 
     <script>
-        // Set theme
-        function setTheme(theme) {
-            document.body.className = theme;
-            if (theme === 'epic') {
-                document.body.style.backgroundImage = "radial-gradient(circle, #1a1a1a 0%, #000000 100%)";
-            } else {
-                document.body.style.backgroundImage = "none";
-            }
-        }
-
-        // Generate Image
-        function generateImage() {
+        async function generateImage() {
             const ratio = document.getElementById("ratio").value;
             const prompt = document.getElementById("prompt").value;
+            const resultDiv = document.getElementById("result");
+            const loadingDiv = document.getElementById("loading");
             
-            // Add ratio and theme to prompt
-            const fullPrompt = `${prompt} --ar ${ratio.split(",")[0]}:${ratio.split(",")[1]} --theme epic-dark`;
+            // Clear previous result and show loading
+            resultDiv.innerHTML = "";
+            loadingDiv.style.display = "block";
             
-            // Generate API Link (replace with actual API endpoint)
-            const apiUrl = `https://seaart-ai.apis-bj-devs.workers.dev/?Prompt=${encodeURIComponent(fullPrompt)}`;
-            
-            // Display result with cool styling
-            document.getElementById("result").innerHTML = `
-                <h3>⚡ Generated API Link:</h3>
-                <p><a href="${apiUrl}" target="_blank" style="color: #ff6b00; word-break: break-all;">${apiUrl}</a></p>
-                <p>↑ Click to generate your EPIC image!</p>
-            `;
+            try {
+                // Format prompt with ratio (e.g., "A forest --ar 9:16")
+                const fullPrompt = `${prompt} --ar ${ratio.split(",")[0]}:${ratio.split(",")[1]}`;
+                
+                // Call SeaArt API (replace with actual API endpoint)
+                const apiUrl = `https://seaart-ai.apis-bj-devs.workers.dev/?Prompt=${encodeURIComponent(fullPrompt)}`;
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                
+                // Display the first generated image
+                if (data.status === "success" && data.result.length > 0) {
+                    const imageUrl = data.result[0].url;
+                    resultDiv.innerHTML = `
+                        <h3>🎉 Your Generated Image:</h3>
+                        <img id="generatedImage" src="${imageUrl}" alt="Generated Image">
+                        <p><a href="${imageUrl}" target="_blank" style="color: #ff6b00;">🔗 Open Full Image</a></p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p style="color: red;">❌ Error: ${data.message || "Failed to generate image"}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">❌ Network Error: ${error.message}</p>`;
+            } finally {
+                loadingDiv.style.display = "none";
+            }
         }
     </script>
 </body>
