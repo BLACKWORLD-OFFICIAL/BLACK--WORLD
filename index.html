@@ -115,7 +115,7 @@
             return;
         }
 
-        const url = `https://botfather.cloud/Apis/ImgGen/client.php?inputText=${encodeURIComponent(prompt)}`;
+        const url = `https://eternal-ai-image-gen-api.tiiny.io/?prompt=${encodeURIComponent(prompt)}`;
 
         fetch(url)
             .then(response => response.json())
