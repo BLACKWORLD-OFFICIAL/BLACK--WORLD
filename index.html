@@ -63,14 +63,14 @@
             return;
         }
 
-        const url = `https://bj-devs.serv00.net/v1/text-to-image.php?prompt=${encodeURIComponent(prompt)}`;
+        const url = `https://botfather.cloud/Apis/ImgGen/client.php?inputText=${encodeURIComponent(prompt)}`;
 
         fetch(url)
             .then(response => response.json())
             .then(data => {
-                if (data.image) {
+                if (data.image_url) {
                     const imgElement = document.createElement("img");
-                    imgElement.src = data.image;
+                    imgElement.src = data.image_url;
                     const imageContainer = document.getElementById("imageContainer");
                     imageContainer.innerHTML = "";  // Clear any previous images
                     imageContainer.appendChild(imgElement);
