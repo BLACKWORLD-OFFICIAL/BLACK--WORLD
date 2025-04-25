@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HUZII AI - SeaArt Generator</title>
+  <title>HUZII AI Pro - Image Generator</title>
   <style>
     :root {
       --primary: #00f7ff;
@@ -11,6 +11,7 @@
       --accent: #ff00f7;
       --card-bg: #111;
       --text: #fff;
+      --error: #ff5555;
     }
     
     body {
@@ -19,10 +20,15 @@
       font-family: 'Segoe UI', sans-serif;
       max-width: 1200px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 2rem;
       background-image: 
         radial-gradient(circle at 25% 25%, rgba(0, 247, 255, 0.1) 0%, transparent 50%),
         radial-gradient(circle at 75% 75%, rgba(255, 0, 247, 0.1) 0%, transparent 50%);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
     }
 
     h1 {
@@ -31,71 +37,96 @@
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
+      margin: 0;
       text-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
-      margin-bottom: 30px;
     }
 
-    .input-container {
-      background: rgba(17, 17, 17, 0.9);
-      padding: 25px;
+    .subtitle {
+      color: var(--primary);
+      opacity: 0.8;
+      margin-top: 0.5rem;
+    }
+
+    .control-panel {
+      background: rgba(17, 17, 17, 0.95);
+      padding: 1.5rem;
       border-radius: 15px;
       box-shadow: 0 0 25px rgba(0, 247, 255, 0.2);
-      margin-bottom: 30px;
-      border: 1px solid rgba(0, 247, 255, 0.1);
+      margin-bottom: 2rem;
+      border: 1px solid rgba(0, 247, 255, 0.2);
     }
 
     .input-group {
       display: flex;
-      gap: 15px;
+      gap: 1rem;
       flex-wrap: wrap;
     }
 
     input, select, button {
-      padding: 14px 20px;
+      padding: 0.8rem 1.2rem;
       border-radius: 10px;
       border: 1px solid rgba(0, 247, 255, 0.3);
       font-size: 1rem;
       transition: all 0.3s ease;
+      outline: none;
     }
 
-    input {
+    #prompt {
       flex: 1;
       min-width: 300px;
       background: #222;
       color: var(--text);
     }
 
-    input:focus {
+    #prompt:focus {
       box-shadow: 0 0 15px var(--primary);
       border-color: var(--primary);
     }
 
-    select {
+    #ratio {
       background: var(--card-bg);
       color: var(--primary);
       min-width: 180px;
       cursor: pointer;
     }
 
-    button {
+    #generateBtn {
       background: linear-gradient(45deg, var(--primary), var(--accent));
       color: black;
       font-weight: bold;
       cursor: pointer;
       min-width: 180px;
+      position: relative;
+      overflow: hidden;
     }
 
-    button:hover {
+    #generateBtn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, var(--accent), var(--primary));
+      transition: all 0.4s ease;
+      z-index: -1;
+    }
+
+    #generateBtn:hover {
       transform: scale(1.03);
       box-shadow: 0 0 20px var(--primary);
     }
 
-    .loading {
+    #generateBtn:hover::before {
+      left: 0;
+    }
+
+    .status {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 20px;
-      margin: 40px 0;
+      gap: 1rem;
+      margin: 2rem 0;
       color: var(--primary);
     }
 
@@ -112,46 +143,84 @@
       to { transform: rotate(360deg); }
     }
 
-    .image-grid {
+    .gallery {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 25px;
-      margin-top: 30px;
+      gap: 1.5rem;
+      margin-top: 2rem;
     }
 
-    .image-card {
+    .card {
       background: var(--card-bg);
       border-radius: 15px;
       overflow: hidden;
       box-shadow: 0 0 15px rgba(0, 247, 255, 0.2);
       transition: all 0.3s ease;
+      border: 1px solid rgba(0, 247, 255, 0.1);
     }
 
-    .image-card:hover {
+    .card:hover {
       transform: translateY(-10px);
       box-shadow: 0 0 25px var(--primary);
     }
 
-    .image-card img {
+    .card-image {
       width: 100%;
       height: auto;
       aspect-ratio: var(--img-ratio);
       object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover .card-image {
+      transform: scale(1.02);
+    }
+
+    .card-footer {
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.5);
     }
 
     .download-btn {
       display: block;
-      padding: 12px;
+      padding: 0.8rem;
       background: linear-gradient(45deg, var(--primary), var(--accent));
       color: black;
       text-align: center;
       font-weight: bold;
       text-decoration: none;
+      border-radius: 8px;
       transition: all 0.3s ease;
     }
 
     .download-btn:hover {
       background: linear-gradient(45deg, var(--accent), var(--primary));
+      box-shadow: 0 0 10px var(--primary);
+    }
+
+    .error-panel {
+      background: rgba(255, 85, 85, 0.1);
+      padding: 1.5rem;
+      border-radius: 15px;
+      border: 1px solid var(--error);
+      color: var(--error);
+      text-align: center;
+    }
+
+    .retry-btn {
+      background: var(--error);
+      color: white;
+      border: none;
+      margin-top: 1rem;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .retry-btn:hover {
+      background: #ff3333;
+      transform: scale(1.05);
     }
 
     @media (max-width: 768px) {
@@ -162,98 +231,156 @@
       input, select, button {
         width: 100%;
       }
+      
+      h1 {
+        font-size: 2rem;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>HUZII AI - SeaArt Generator</h1>
+  <header>
+    <h1>HUZII AI Pro</h1>
+    <p class="subtitle">High-Speed Image Generation API</p>
+  </header>
   
-  <div class="input-container">
+  <div class="control-panel">
     <div class="input-group">
-      <input type="text" id="prompt" placeholder="Describe your image..." autofocus>
+      <input type="text" id="prompt" placeholder="Enter your creative prompt..." autofocus>
       <select id="ratio">
         <option value="1:1">Square (1:1)</option>
         <option value="16:9">Widescreen (16:9)</option>
         <option value="9:16">Portrait (9:16)</option>
+        <option value="4:3">Classic (4:3)</option>
       </select>
-      <button onclick="generateImages()">Generate</button>
+      <button id="generateBtn" onclick="generateImages()">Generate Images</button>
     </div>
   </div>
 
-  <div class="image-grid" id="imageGrid"></div>
+  <div id="galleryContainer">
+    <!-- Content will be dynamically inserted here -->
+  </div>
 
   <script>
+    const API_ENDPOINT = "https://bj-devs.serv00.net/v1/text-to-image.php";
+    
     async function generateImages() {
       const prompt = document.getElementById('prompt').value.trim();
       if (!prompt) {
-        alert('Please enter a prompt');
+        alert('Please enter a prompt to generate images');
         return;
       }
 
       const ratio = document.getElementById('ratio').value;
-      const [width, height] = ratio.split(':').map(Number);
-      const grid = document.getElementById('imageGrid');
+      const [widthRatio, heightRatio] = ratio.split(':').map(Number);
+      const aspectRatio = widthRatio / heightRatio;
       
-      grid.innerHTML = `
-        <div class="loading">
+      const galleryContainer = document.getElementById('galleryContainer');
+      galleryContainer.innerHTML = `
+        <div class="status">
           <div class="spinner"></div>
-          Generating high-quality images via SeaArt API...
+          <div>Generating 4 unique images...</div>
+          <div style="font-size: 0.9rem; opacity: 0.7;">Using high-performance AI API</div>
         </div>
       `;
-
+      
       try {
-        // Generate 4 unique images
-        const imageUrls = await Promise.all(
-          Array.from({ length: 4 }, (_, i) => 
-            fetchSeaArtImage(prompt, width, height, i)
-        );
-
-        grid.innerHTML = '';
+        // Generate 4 unique images in parallel
+        const imageRequests = Array.from({ length: 4 }, (_, index) => {
+          const seed = Math.floor(Math.random() * 1000000);
+          return fetchImage(prompt, widthRatio, heightRatio, seed, index + 1);
+        });
         
-        imageUrls.forEach((url, index) => {
-          if (!url) return;
-          
+        const images = await Promise.all(imageRequests);
+        
+        // Filter out any failed generations
+        const successfulImages = images.filter(img => img !== null);
+        
+        if (successfulImages.length === 0) {
+          throw new Error("All image generations failed. Please try a different prompt.");
+        }
+        
+        // Display the gallery
+        galleryContainer.innerHTML = `
+          <div class="gallery" id="imageGallery"></div>
+        `;
+        
+        const gallery = document.getElementById('imageGallery');
+        
+        successfulImages.forEach((imgData, index) => {
           const card = document.createElement('div');
-          card.className = 'image-card';
-          card.style.setProperty('--img-ratio', width / height);
+          card.className = 'card';
+          card.style.setProperty('--img-ratio', aspectRatio);
           
           card.innerHTML = `
-            <img src="${url}" alt="Generated image ${index + 1}">
-            <a href="${url}" download="huzii-ai-${index + 1}.jpg" class="download-btn">
-              Download (${ratio})
-            </a>
+            <img class="card-image" src="${imgData.url}" alt="Generated image: ${prompt.substring(0, 50)}" loading="lazy">
+            <div class="card-footer">
+              <a href="${imgData.url}" download="huzii-ai-${index + 1}.jpg" class="download-btn">
+                Download (${ratio})
+              </a>
+            </div>
           `;
           
-          grid.appendChild(card);
+          gallery.appendChild(card);
         });
-
+        
       } catch (error) {
-        grid.innerHTML = `
-          <div class="loading" style="color: #ff5555;">
-            Error: ${error.message || 'Failed to generate images'}
-            <button onclick="generateImages()" style="margin-top: 20px;">Try Again</button>
+        galleryContainer.innerHTML = `
+          <div class="error-panel">
+            <h3>Generation Error</h3>
+            <p>${error.message || 'Failed to generate images. The API might be temporarily unavailable.'}</p>
+            <button class="retry-btn" onclick="generateImages()">Retry Generation</button>
           </div>
         `;
-        console.error('Generation error:', error);
+        console.error('Image generation error:', error);
       }
     }
-
-    async function fetchSeaArtImage(prompt, width, height, seed) {
-      const apiUrl = `https://seaart-ai.apis-bj-devs.workers.dev/?Prompt=${encodeURIComponent(prompt)}&width=${width * 100}&height=${height * 100}&seed=${seed}`;
+    
+    async function fetchImage(prompt, widthRatio, heightRatio, seed, index) {
+      // Calculate reasonable pixel dimensions while maintaining ratio
+      const baseSize = 512;
+      const width = Math.round(baseSize * widthRatio);
+      const height = Math.round(baseSize * heightRatio);
+      
+      const apiUrl = `${API_ENDPOINT}?prompt=${encodeURIComponent(prompt)}&width=${width}&height=${height}&seed=${seed}`;
       
       try {
         const response = await fetch(apiUrl);
-        if (!response.ok) throw new Error('API request failed');
-        return await response.text(); // SeaArt returns direct image URL
+        
+        if (!response.ok) {
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+        
+        // Assuming the API returns the image directly
+        const imageUrl = await response.text();
+        
+        // Verify the URL looks valid
+        if (!imageUrl.startsWith('http')) {
+          throw new Error('Invalid image URL received from API');
+        }
+        
+        return {
+          url: imageUrl,
+          index,
+          seed
+        };
+        
       } catch (error) {
-        console.error(`Error fetching image ${seed}:`, error);
+        console.error(`Error generating image ${index}:`, error);
         return null;
       }
     }
-
-    // Enter key support
+    
+    // Add keyboard support
     document.getElementById('prompt').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') generateImages();
+      if (e.key === 'Enter') {
+        generateImages();
+      }
+    });
+    
+    // Initialize with focus on prompt
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('prompt').focus();
     });
   </script>
 </body>
