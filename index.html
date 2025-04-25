@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HUZII AI Pro - Image Generator</title>
+  <title>HUZII AI - Single Image Generator</title>
   <style>
     :root {
       --primary: #00f7ff;
@@ -41,12 +41,6 @@
       text-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
     }
 
-    .subtitle {
-      color: var(--primary);
-      opacity: 0.8;
-      margin-top: 0.5rem;
-    }
-
     .control-panel {
       background: rgba(17, 17, 17, 0.95);
       padding: 1.5rem;
@@ -54,6 +48,9 @@
       box-shadow: 0 0 25px rgba(0, 247, 255, 0.2);
       margin-bottom: 2rem;
       border: 1px solid rgba(0, 247, 255, 0.2);
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .input-group {
@@ -128,6 +125,7 @@
       gap: 1rem;
       margin: 2rem 0;
       color: var(--primary);
+      text-align: center;
     }
 
     .spinner {
@@ -143,59 +141,50 @@
       to { transform: rotate(360deg); }
     }
 
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin-top: 2rem;
+    .result-container {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
     }
 
-    .card {
+    .image-card {
       background: var(--card-bg);
       border-radius: 15px;
       overflow: hidden;
-      box-shadow: 0 0 15px rgba(0, 247, 255, 0.2);
+      box-shadow: 0 0 25px rgba(0, 247, 255, 0.3);
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(0, 247, 255, 0.2);
       transition: all 0.3s ease;
-      border: 1px solid rgba(0, 247, 255, 0.1);
     }
 
-    .card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 0 25px var(--primary);
+    .image-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 35px var(--primary);
     }
 
-    .card-image {
+    .generated-image {
       width: 100%;
       height: auto;
       aspect-ratio: var(--img-ratio);
       object-fit: cover;
-      transition: transform 0.3s ease;
-    }
-
-    .card:hover .card-image {
-      transform: scale(1.02);
-    }
-
-    .card-footer {
-      padding: 1rem;
-      background: rgba(0, 0, 0, 0.5);
     }
 
     .download-btn {
-      display: block;
-      padding: 0.8rem;
+      display: inline-block;
+      padding: 0.8rem 2rem;
       background: linear-gradient(45deg, var(--primary), var(--accent));
       color: black;
-      text-align: center;
       font-weight: bold;
       text-decoration: none;
-      border-radius: 8px;
+      border-radius: 10px;
+      margin-top: 1rem;
       transition: all 0.3s ease;
     }
 
     .download-btn:hover {
       background: linear-gradient(45deg, var(--accent), var(--primary));
-      box-shadow: 0 0 10px var(--primary);
+      box-shadow: 0 0 15px var(--primary);
+      transform: scale(1.05);
     }
 
     .error-panel {
@@ -205,6 +194,8 @@
       border: 1px solid var(--error);
       color: var(--error);
       text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
     .retry-btn {
@@ -240,8 +231,8 @@
 </head>
 <body>
   <header>
-    <h1>HUZII AI Pro</h1>
-    <p class="subtitle">High-Speed Image Generation API</p>
+    <h1>HUZII AI</h1>
+    <p style="color: var(--primary); opacity: 0.8;">Single Image Generator</p>
   </header>
   
   <div class="control-panel">
@@ -253,21 +244,21 @@
         <option value="9:16">Portrait (9:16)</option>
         <option value="4:3">Classic (4:3)</option>
       </select>
-      <button id="generateBtn" onclick="generateImages()">Generate Images</button>
+      <button id="generateBtn" onclick="generateImage()">Generate Image</button>
     </div>
   </div>
 
-  <div id="galleryContainer">
-    <!-- Content will be dynamically inserted here -->
+  <div id="resultContainer">
+    <!-- Results will appear here -->
   </div>
 
   <script>
     const API_ENDPOINT = "https://bj-devs.serv00.net/v1/text-to-image.php";
     
-    async function generateImages() {
+    async function generateImage() {
       const prompt = document.getElementById('prompt').value.trim();
       if (!prompt) {
-        alert('Please enter a prompt to generate images');
+        alert('Please enter a prompt to generate an image');
         return;
       }
 
@@ -275,83 +266,30 @@
       const [widthRatio, heightRatio] = ratio.split(':').map(Number);
       const aspectRatio = widthRatio / heightRatio;
       
-      const galleryContainer = document.getElementById('galleryContainer');
-      galleryContainer.innerHTML = `
+      const resultContainer = document.getElementById('resultContainer');
+      resultContainer.innerHTML = `
         <div class="status">
           <div class="spinner"></div>
-          <div>Generating 4 unique images...</div>
-          <div style="font-size: 0.9rem; opacity: 0.7;">Using high-performance AI API</div>
+          <div>Creating your image...</div>
+          <div style="font-size: 0.9rem; opacity: 0.7;">This usually takes 10-20 seconds</div>
         </div>
       `;
       
       try {
-        // Generate 4 unique images in parallel
-        const imageRequests = Array.from({ length: 4 }, (_, index) => {
-          const seed = Math.floor(Math.random() * 1000000);
-          return fetchImage(prompt, widthRatio, heightRatio, seed, index + 1);
-        });
+        // Calculate optimal image dimensions
+        const baseSize = 768; // Higher base size for better quality
+        const width = Math.round(baseSize * widthRatio);
+        const height = Math.round(baseSize * heightRatio);
+        const seed = Math.floor(Math.random() * 1000000);
         
-        const images = await Promise.all(imageRequests);
+        const apiUrl = `${API_ENDPOINT}?prompt=${encodeURIComponent(prompt)}&width=${width}&height=${height}&seed=${seed}`;
         
-        // Filter out any failed generations
-        const successfulImages = images.filter(img => img !== null);
-        
-        if (successfulImages.length === 0) {
-          throw new Error("All image generations failed. Please try a different prompt.");
-        }
-        
-        // Display the gallery
-        galleryContainer.innerHTML = `
-          <div class="gallery" id="imageGallery"></div>
-        `;
-        
-        const gallery = document.getElementById('imageGallery');
-        
-        successfulImages.forEach((imgData, index) => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.style.setProperty('--img-ratio', aspectRatio);
-          
-          card.innerHTML = `
-            <img class="card-image" src="${imgData.url}" alt="Generated image: ${prompt.substring(0, 50)}" loading="lazy">
-            <div class="card-footer">
-              <a href="${imgData.url}" download="huzii-ai-${index + 1}.jpg" class="download-btn">
-                Download (${ratio})
-              </a>
-            </div>
-          `;
-          
-          gallery.appendChild(card);
-        });
-        
-      } catch (error) {
-        galleryContainer.innerHTML = `
-          <div class="error-panel">
-            <h3>Generation Error</h3>
-            <p>${error.message || 'Failed to generate images. The API might be temporarily unavailable.'}</p>
-            <button class="retry-btn" onclick="generateImages()">Retry Generation</button>
-          </div>
-        `;
-        console.error('Image generation error:', error);
-      }
-    }
-    
-    async function fetchImage(prompt, widthRatio, heightRatio, seed, index) {
-      // Calculate reasonable pixel dimensions while maintaining ratio
-      const baseSize = 512;
-      const width = Math.round(baseSize * widthRatio);
-      const height = Math.round(baseSize * heightRatio);
-      
-      const apiUrl = `${API_ENDPOINT}?prompt=${encodeURIComponent(prompt)}&width=${width}&height=${height}&seed=${seed}`;
-      
-      try {
         const response = await fetch(apiUrl);
         
         if (!response.ok) {
           throw new Error(`API request failed with status ${response.status}`);
         }
         
-        // Assuming the API returns the image directly
         const imageUrl = await response.text();
         
         // Verify the URL looks valid
@@ -359,22 +297,34 @@
           throw new Error('Invalid image URL received from API');
         }
         
-        return {
-          url: imageUrl,
-          index,
-          seed
-        };
+        // Display the result
+        resultContainer.innerHTML = `
+          <div class="result-container">
+            <div class="image-card" style="--img-ratio: ${aspectRatio}">
+              <img class="generated-image" src="${imageUrl}" alt="Generated image: ${prompt.substring(0, 50)}" loading="eager">
+            </div>
+            <a href="${imageUrl}" download="huzii-ai-${Date.now()}.jpg" class="download-btn">
+              Download Image (${ratio})
+            </a>
+          </div>
+        `;
         
       } catch (error) {
-        console.error(`Error generating image ${index}:`, error);
-        return null;
+        resultContainer.innerHTML = `
+          <div class="error-panel">
+            <h3>Generation Failed</h3>
+            <p>${error.message || 'The image could not be generated. Please try again.'}</p>
+            <button class="retry-btn" onclick="generateImage()">Try Again</button>
+          </div>
+        `;
+        console.error('Image generation error:', error);
       }
     }
     
     // Add keyboard support
     document.getElementById('prompt').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
-        generateImages();
+        generateImage();
       }
     });
     
